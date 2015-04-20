@@ -1,5 +1,3 @@
-### RedGate.Time
+# RedGate.Time
 
-#### Introduction
-
-This .NET code library provides abstractions of some time-based facilities in the BCL. Specifically, it provides alternative access to DateTime.UtcNow, DateTimeOffset.UtcNow and Task.Delay().    
+This .NET code library provides abstractions of some time-based facilities in the BCL. Specifically, it provides alternative access to DateTime.Now, DateTime.UtcNow and Task.Delay().    

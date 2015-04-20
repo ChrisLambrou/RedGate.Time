@@ -1,0 +1,32 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AssemblyVersion>$(BUILD_NUMBER)</AssemblyVersion>
+	<AssemblyVersion Condition=" '$(AssemblyVersion)' == '' ">1.0.0.0</AssemblyVersion>
+  </PropertyGroup>
+  <UsingTask TaskName="ReplaceFileText" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <Filename ParameterType="System.String" Required="true" />
+      <MatchExpression ParameterType="System.String" Required="true" />
+      <ReplacementText ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Core" />
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+        var currentContents = File.ReadAllText(Filename);
+        var newContents = Regex.Replace(currentContents, MatchExpression, ReplacementText);
+        if (newContents != currentContents)
+        {
+            File.WriteAllText(Filename, newContents);
+        }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  <Target Name="SetAssemblyVersion" BeforeTargets="BeforeBuild">
+    <ReplaceFileText Filename="$(ProjectDir)VersionInfo.cs" MatchExpression="(?&lt;=AssemblyVersion\s+=\s+&quot;)[\.0-9]+(?=&quot;)" ReplacementText="$(AssemblyVersion)" />
+  </Target>
+</Project>
