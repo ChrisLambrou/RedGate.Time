@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using RedGate.Time;
 
 [assembly: AssemblyTitle("RedGate.Time")]
-[assembly: AssemblyDescription("BCL time facility abstractions")]
+[assembly: AssemblyDescription("BCL time facility abstractions. Licensed under the MIT license.")]
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug")]
 #else
