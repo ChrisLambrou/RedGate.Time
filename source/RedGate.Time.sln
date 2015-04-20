@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{6F1025
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedGate.Time", "RedGate.Time\RedGate.Time.csproj", "{55A2A5A4-23F0-4DCF-A64C-5272D401CDE5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedGate.Time.Test", "RedGate.Time.Test\RedGate.Time.Test.csproj", "{B331A71E-44C2-40F4-BFAD-BC66B7F68DF5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{55A2A5A4-23F0-4DCF-A64C-5272D401CDE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55A2A5A4-23F0-4DCF-A64C-5272D401CDE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55A2A5A4-23F0-4DCF-A64C-5272D401CDE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B331A71E-44C2-40F4-BFAD-BC66B7F68DF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B331A71E-44C2-40F4-BFAD-BC66B7F68DF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B331A71E-44C2-40F4-BFAD-BC66B7F68DF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B331A71E-44C2-40F4-BFAD-BC66B7F68DF5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
