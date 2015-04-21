@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace RedGate.Time.Test
 {
     /// <summary>
     ///     Implementation of <see cref="ITimeService" /> that can be used by unit tests to manually and instantaneously
-    ///     progress &quot;current time&quot; during tests.
+    ///     progress &quot;current time&quot; forwards during tests.
     /// </summary>
     public sealed class TestTimeService : ITimeService
     {
@@ -178,6 +179,8 @@ namespace RedGate.Time.Test
 
         private void StoreTaskCompletionSource(DateTime dueTime, TaskCompletionSource<object> completionSource)
         {
+            Debug.Assert(Monitor.IsEntered(_lock));
+
             IList<TaskCompletionSource<object>> list;
             if (!_pendingTasks.TryGetValue(dueTime, out list))
             {
@@ -199,7 +202,7 @@ namespace RedGate.Time.Test
             }
             lock (_lock)
             {
-                MoveForwardToImpl(UtcNow + TimeSpan.FromMilliseconds(millisecondsDelta));
+                MoveForwardToImpl(_currentTime + TimeSpan.FromMilliseconds(millisecondsDelta));
             }
         }
 
@@ -215,7 +218,7 @@ namespace RedGate.Time.Test
             }
             lock (_lock)
             {
-                MoveForwardToImpl(UtcNow + delta);
+                MoveForwardToImpl(_currentTime + delta);
             }
         }
 
@@ -234,7 +237,7 @@ namespace RedGate.Time.Test
             lock (_lock)
             {
                 var newTime = _startTime + TimeSpan.FromMilliseconds(millisecondsOffsetFromStartTime);
-                if (newTime < UtcNow)
+                if (newTime < _currentTime)
                 {
                     throw new ArgumentOutOfRangeException(
                         "millisecondsOffsetFromStartTime",
@@ -257,7 +260,7 @@ namespace RedGate.Time.Test
             lock (_lock)
             {
                 var newTime = _startTime + offsetFromStartTime;
-                if (newTime < UtcNow)
+                if (newTime < _currentTime)
                 {
                     throw new ArgumentOutOfRangeException("offsetFromStartTime", "Specified time is in the past");
                 }
@@ -274,7 +277,7 @@ namespace RedGate.Time.Test
             lock (_lock)
             {
                 newTime = newTime.ToUniversalTime();
-                if (newTime < UtcNow)
+                if (newTime < _currentTime)
                 {
                     throw new ArgumentOutOfRangeException("newTime", "Specified time is in the past");
                 }
@@ -284,6 +287,8 @@ namespace RedGate.Time.Test
 
         private void MoveForwardToImpl(DateTime newTime)
         {
+            Debug.Assert(Monitor.IsEntered(_lock));
+
             while (true)
             {
                 // Fetch the next set of due tasks.
