@@ -18,17 +18,22 @@ namespace RedGate.Time.Test
             new SortedDictionary<DateTime, IList<TaskCompletionSource<object>>>();
 
         private readonly DateTime _startTime;
+        private DateTime _currentTime;
 
         /// <summary>
         ///     Creates a new instance that uses the actual current time as the initial start time.
         /// </summary>
-        public TestTimeService() : this(DateTime.UtcNow) { }
+        public TestTimeService() : this(DateTime.UtcNow)
+        {}
 
         /// <summary>
         ///     Creates a new instance that uses the specified <paramref name="startTime" />.
         /// </summary>
         /// <param name="startTime">The initial value of &quot;current time&quot;.</param>
-        public TestTimeService(DateTime startTime) { _startTime = UtcNow = startTime.ToUniversalTime(); }
+        public TestTimeService(DateTime startTime)
+        {
+            _startTime = _currentTime = startTime.ToUniversalTime();
+        }
 
         /// <summary>
         ///     Gets the system's current date and time, expressed in local time.
@@ -41,7 +46,16 @@ namespace RedGate.Time.Test
         /// <summary>
         ///     Gets the system's current date and time, expressed in Coordinated Universal Time (UTC).
         /// </summary>
-        public DateTime UtcNow { get; private set; }
+        public DateTime UtcNow
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _currentTime;
+                }
+            }
+        }
 
         /// <summary>
         ///     Creates a Task that will complete after a time delay.
@@ -139,22 +153,27 @@ namespace RedGate.Time.Test
                 return Task.FromResult<object>(null);
             }
 
-            var taskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.PreferFairness);
-            if (cancellationToken.CanBeCanceled)
-            {
-                cancellationToken.Register(() => taskCompletionSource.TrySetCanceled());
-            }
-
+            var taskCompletionSource = CeateTaskCompletionSource(cancellationToken);
             lock (_lock)
             {
                 var dueTime = millisecondsDelay == -1
                                   ? DateTime.MaxValue
-                                  : UtcNow + TimeSpan.FromMilliseconds(millisecondsDelay);
+                                  : _currentTime + TimeSpan.FromMilliseconds(millisecondsDelay);
 
                 StoreTaskCompletionSource(dueTime, taskCompletionSource);
             }
 
             return taskCompletionSource.Task;
+        }
+
+        private static TaskCompletionSource<object> CeateTaskCompletionSource(CancellationToken cancellationToken)
+        {
+            var taskCompletionSource = new TaskCompletionSource<object>();
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationToken.Register(() => taskCompletionSource.TrySetCanceled());
+            }
+            return taskCompletionSource;
         }
 
         private void StoreTaskCompletionSource(DateTime dueTime, TaskCompletionSource<object> completionSource)
@@ -267,20 +286,26 @@ namespace RedGate.Time.Test
         {
             while (true)
             {
+                // Fetch the next set of due tasks.
                 var pair = _pendingTasks.FirstOrDefault();
 
+                // If there are no due tasks, or the next set aren't due yet, we're done.
                 if (pair.Value == null || pair.Key > newTime)
                 {
-                    UtcNow = newTime;
+                    _currentTime = newTime;
                     return;
                 }
 
+                // Update the current time and deal with the current set of due tasks.
+                _currentTime = pair.Key;
                 foreach (var taskCompletionSource in pair.Value)
                 {
                     taskCompletionSource.TrySetResult(null);
                 }
-
                 _pendingTasks.Remove(pair.Key);
+
+                // Briefly yield to any tasks that have just completed.
+                Monitor.Wait(_lock, 1);
             }
         }
     }
