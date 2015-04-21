@@ -21,5 +21,41 @@ namespace RedGate.Time.Tests
         {
             Assert.That(_timeService.UtcNow, Is.EqualTo(_startTime));
         }
+
+        [Test]
+        [TestCase(1500, TestName = "Non-zero")]
+        [TestCase(0, TestName = "Zero")]
+        public void OnANewInstance_MoveForwardByMilliseconds_ShouldProgressUtcNow(int millisecondsDelta)
+        {
+            _timeService.MoveForwardBy(millisecondsDelta);
+            Assert.That(_timeService.UtcNow, Is.EqualTo(_startTime + TimeSpan.FromMilliseconds(millisecondsDelta)));
+        }
+
+        [Test]
+        [TestCase(-1, TestName = "-1")]
+        [TestCase(-10, TestName = "-10")]
+        public void OnANewInstance_MoveForwardByNegativeMilliseconds_ShouldError(int millisecondsDelta)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => _timeService.MoveForwardBy(millisecondsDelta));
+        }
+
+        [Test]
+        [TestCase(1500, TestName = "Non-zero")]
+        [TestCase(0, TestName = "Zero")]
+        public void OnANewInstance_MoveForwardByTimeSpan_ShouldProgressUtcNow(int millisecondsDelta)
+        {
+            var delta = TimeSpan.FromMilliseconds(millisecondsDelta);
+            _timeService.MoveForwardBy(delta);
+            Assert.That(_timeService.UtcNow, Is.EqualTo(_startTime + delta));
+        }
+
+        [Test]
+        [TestCase(-1, TestName = "-1")]
+        [TestCase(-10, TestName = "-10")]
+        public void OnANewInstance_MoveForwardByNegativeTimeSpan_ShouldError(int millisecondsDelta)
+        {
+            var delta = TimeSpan.FromMilliseconds(millisecondsDelta);
+            Assert.Throws<ArgumentOutOfRangeException>(() => _timeService.MoveForwardBy(delta));
+        }
     }
 }
