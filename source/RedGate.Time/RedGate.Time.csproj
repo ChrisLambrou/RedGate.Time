@@ -43,7 +43,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TimeService.cs" />
+    <Compile Include="Impl\DefaultTimeService.cs" />
     <Compile Include="ITimeService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VersionInfo.cs" />

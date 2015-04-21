@@ -2,12 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RedGate.Time
+namespace RedGate.Time.Impl
 {
     /// <summary>
     ///     Default implementation of <see cref="ITimeService" />.
     /// </summary>
-    public sealed class TimeService : ITimeService
+    public sealed class DefaultTimeService : ITimeService
     {
         /// <summary>
         ///     Gets the system's current date and time, expressed in local time.
