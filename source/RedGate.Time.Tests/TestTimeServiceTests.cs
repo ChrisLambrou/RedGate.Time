@@ -19,9 +19,22 @@ namespace RedGate.Time.Tests
             {
                 base.SetUp();
 
-                var oneSecond = TimeSpan.FromSeconds(1);
-                _timeService.MoveForwardBy(oneSecond);
-                _testStartTime += oneSecond;
+                _timeService.MoveForwardBy(TimeSpan.FromSeconds(1));
+                _testStartTime += TimeSpan.FromSeconds(1);
+            }
+        }
+
+        [TestFixture]
+        public class AnInstanceWithPendingDelayTasks : MoveForwardTestsBase
+        {
+            public override void SetUp()
+            {
+                base.SetUp();
+
+                _timeService.MoveForwardBy(TimeSpan.FromSeconds(0.5));
+                _timeService.Delay(TimeSpan.FromSeconds(2));
+                _timeService.MoveForwardBy(TimeSpan.FromSeconds(0.5));
+                _testStartTime += TimeSpan.FromSeconds(1);
             }
         }
 
