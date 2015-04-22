@@ -287,6 +287,7 @@ namespace RedGate.Time.Test
 
         private void MoveForwardToImpl(DateTime newTime)
         {
+            Debug.Assert(newTime.Kind == DateTimeKind.Utc);
             Debug.Assert(Monitor.IsEntered(_lock));
 
             while (true)
