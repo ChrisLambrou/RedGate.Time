@@ -25,7 +25,7 @@ namespace RedGate.Time.Tests
         }
 
         [TestFixture]
-        public class AnInstanceWithPendingDelayTasks : MoveForwardTestsBase
+        public class AnInstanceWithAPendingDelayTask : MoveForwardTestsBase
         {
             public override void SetUp()
             {
