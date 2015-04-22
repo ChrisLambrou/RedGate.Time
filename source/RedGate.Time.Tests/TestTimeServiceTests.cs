@@ -40,6 +40,10 @@ namespace RedGate.Time.Tests
 
         public abstract class MoveForwardTestsBase
         {
+            private readonly DateTime _serviceStartTime = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            protected DateTime _testStartTime;
+            protected TestTimeService _timeService;
+
             [SetUp]
             public virtual void SetUp()
             {
@@ -47,9 +51,11 @@ namespace RedGate.Time.Tests
                 _testStartTime = _serviceStartTime;
             }
 
-            private readonly DateTime _serviceStartTime = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            protected DateTime _testStartTime;
-            protected TestTimeService _timeService;
+            [TearDown]
+            public void TearDown()
+            {
+                _timeService.Dispose();
+            }
 
             [Test]
             public void UtcNow_ShouldReturnTheStartTime()

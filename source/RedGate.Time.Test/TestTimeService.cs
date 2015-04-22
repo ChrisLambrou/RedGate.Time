@@ -11,7 +11,7 @@ namespace RedGate.Time.Test
     ///     Implementation of <see cref="ITimeService" /> that can be used by unit tests to manually and instantaneously
     ///     progress &quot;current time&quot; forwards during tests.
     /// </summary>
-    public sealed class TestTimeService : ITimeService
+    public sealed class TestTimeService : ITimeService, IDisposable
     {
         private readonly object _lock = new object();
 
@@ -20,6 +20,7 @@ namespace RedGate.Time.Test
 
         private readonly DateTime _startTime;
         private DateTime _currentTime;
+        private long _disposalCount;
 
         /// <summary>
         ///     Creates a new instance that uses the actual current time as the initial start time.
@@ -37,6 +38,37 @@ namespace RedGate.Time.Test
         }
 
         /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        /// <filterpriority>2</filterpriority>
+        public void Dispose()
+        {
+            if (Interlocked.Increment(ref _disposalCount) == 1)
+            {
+                lock (_lock)
+                {
+                    foreach (var taskCompletionSource in _pendingTasks.SelectMany(pair => pair.Value))
+                    {
+                        taskCompletionSource.TrySetCanceled();
+                    }
+                    _pendingTasks.Clear();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks that this instance hasn't been disposed.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">Raised if this instance has beeen disposed.</exception>
+        private void CheckDisposed()
+        {
+            if (Interlocked.Read(ref _disposalCount) > 0)
+            {
+                throw new ObjectDisposedException("TestTimeService has been disposed");
+            }
+        }
+
+        /// <summary>
         ///     Gets the system's current date and time, expressed in local time.
         /// </summary>
         public DateTime Now
@@ -51,6 +83,8 @@ namespace RedGate.Time.Test
         {
             get
             {
+                CheckDisposed();
+
                 lock (_lock)
                 {
                     return _currentTime;
@@ -71,6 +105,8 @@ namespace RedGate.Time.Test
         /// </remarks>
         public Task Delay(TimeSpan delay)
         {
+            CheckDisposed();
+
             // This mirrors the implementation of Task.Delay(TimeSpan).
             return Delay(delay, default(CancellationToken));
         }
@@ -94,6 +130,8 @@ namespace RedGate.Time.Test
         /// </remarks>
         public Task Delay(TimeSpan delay, CancellationToken cancellationToken)
         {
+            CheckDisposed();
+
             // This mirrors the implementation of Task.Delay(TimeSpan, CancellationToken).
             var totalMilliseconds = (long) delay.TotalMilliseconds;
             if (totalMilliseconds < -1 || totalMilliseconds > int.MaxValue)
@@ -119,6 +157,8 @@ namespace RedGate.Time.Test
         /// </remarks>
         public Task Delay(int millisecondsDelay)
         {
+            CheckDisposed();
+
             // This mirrors the implementation of Task.Delay(int).
             return Delay(millisecondsDelay, default(CancellationToken));
         }
@@ -145,6 +185,8 @@ namespace RedGate.Time.Test
         /// </remarks>
         public Task Delay(int millisecondsDelay, CancellationToken cancellationToken)
         {
+            CheckDisposed();
+
             if (millisecondsDelay < -1)
             {
                 throw new ArgumentOutOfRangeException("millisecondsDelay");
@@ -196,6 +238,8 @@ namespace RedGate.Time.Test
         /// <param name="millisecondsDelta">The amount of time in milliseconds to move &quot;current time&quot; forward by.</param>
         public void MoveForwardBy(int millisecondsDelta)
         {
+            CheckDisposed();
+
             if (millisecondsDelta < 0)
             {
                 throw new ArgumentOutOfRangeException("millisecondsDelta", "Negative time span not permitted");
@@ -212,6 +256,8 @@ namespace RedGate.Time.Test
         /// <param name="delta">The amount of time to move &quot;current time&quot; forward by.</param>
         public void MoveForwardBy(TimeSpan delta)
         {
+            CheckDisposed();
+
             if (delta < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException("delta", "Negative time span not permitted");
@@ -228,6 +274,8 @@ namespace RedGate.Time.Test
         /// <param name="millisecondsOffsetFromStartTime">The number of milliseconds elapsed since the start time.</param>
         public void MoveForwardTo(int millisecondsOffsetFromStartTime)
         {
+            CheckDisposed();
+
             if (millisecondsOffsetFromStartTime < 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -253,6 +301,8 @@ namespace RedGate.Time.Test
         /// <param name="offsetFromStartTime">The offset after the start time to move forward to.</param>
         public void MoveForwardTo(TimeSpan offsetFromStartTime)
         {
+            CheckDisposed();
+
             if (offsetFromStartTime < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException("offsetFromStartTime", "Negative time span not permitted");
@@ -274,6 +324,8 @@ namespace RedGate.Time.Test
         /// <param name="newTime">The the new time to move forward to.</param>
         public void MoveForwardTo(DateTime newTime)
         {
+            CheckDisposed();
+
             lock (_lock)
             {
                 newTime = newTime.ToUniversalTime();
