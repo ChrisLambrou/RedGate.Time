@@ -45,5 +45,16 @@ namespace RedGate.Time.Tests
             TimeService.MoveForwardTo(1000);
             Assert.That(_delayTask.IsCompleted, Is.True);
         }
+
+        [Test]
+        public void WhenTimeProgresses_ToTheDelayCompletionTime_AnyContinuationTaskMustExecute()
+        {
+            int executionCount = 0;
+            _delayTask.ContinueWith(task => executionCount++);
+
+            Assert.That(executionCount, Is.EqualTo(0));
+            TimeService.MoveForwardTo(1000);
+            Assert.That(executionCount, Is.EqualTo(1));
+        }
     }
 }
