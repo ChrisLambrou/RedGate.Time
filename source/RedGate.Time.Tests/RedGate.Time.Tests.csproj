@@ -41,8 +41,14 @@
     <Compile Include="..\RedGate.Time\VersionInfo.cs">
       <Link>VersionInfo.cs</Link>
     </Compile>
-    <Compile Include="TestTimeServiceTests.cs" />
+    <Compile Include="TestTimeServiceTestsBase.cs" />
+    <Compile Include="TestTimeService_SingleNonZeroLengthDelayTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestTimeService_MoveForwardTestsBase.cs" />
+    <Compile Include="TestTimeService_MoveForwardTests_OnANewInstance.cs" />
+    <Compile Include="TestTimeService_MoveForwardTests_OnANewInstanceProgressedOnceToAFutureTime.cs" />
+    <Compile Include="TestTimeService_MoveForwardTests_OnAnInstanceWithAPendingDelayTask.cs" />
+    <Compile Include="TestTimeService_SingleZeroLengthDelayTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
