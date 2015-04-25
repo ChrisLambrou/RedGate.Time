@@ -15,6 +15,12 @@ namespace RedGate.Time.Tests
         }
 
         [Test]
+        public void UtcNow_ShouldReturnAUtcTime()
+        {
+            Assert.That(TimeService.UtcNow.Kind, Is.EqualTo(DateTimeKind.Utc));
+        }
+
+        [Test]
         public void UtcNow_ShouldReturnTheStartTime()
         {
             Assert.That(TimeService.UtcNow, Is.EqualTo(TestStartTime));

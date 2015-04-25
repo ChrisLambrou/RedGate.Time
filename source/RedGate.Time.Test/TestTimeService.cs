@@ -363,7 +363,7 @@ namespace RedGate.Time.Test
                 _pendingTasks.Remove(pair.Key);
 
                 // Briefly yield to any tasks that have just completed.
-                Monitor.Wait(_lock, 1);
+                Monitor.Wait(_lock, 10);
             }
         }
     }

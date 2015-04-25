@@ -42,6 +42,7 @@
       <Link>VersionInfo.cs</Link>
     </Compile>
     <Compile Include="TestTimeServiceTestsBase.cs" />
+    <Compile Include="TestTimeService_DisposableChecks.cs" />
     <Compile Include="TestTimeService_SingleNonZeroLengthDelayTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestTimeService_MoveForwardTestsBase.cs" />
