@@ -8,39 +8,98 @@ using System.Threading.Tasks;
 namespace RedGate.Time.Test
 {
     /// <summary>
-    ///     Implementation of <see cref="ITimeService" /> that can be used by unit tests to manually and instantaneously
-    ///     progress &quot;current time&quot; forwards during tests.
+    ///     Implementation of <see cref="ITimeService" /> that can be used by unit tests to manually and
+    ///     instantaneously progress &quot;current time&quot; forwards during tests.
     /// </summary>
     public sealed class TestTimeService : ITimeService, IDisposable
     {
+        private static readonly TimeSpan DefaultYieldDuration = TimeSpan.FromMilliseconds(10);
+
+        /// <summary>
+        ///     Synchronisation lock object used to guard access to <see cref="_pendingTasks" /> and
+        ///     <see cref="_currentTime" />.
+        /// </summary>
         private readonly object _lock = new object();
 
+        /// <summary>
+        ///     All ongoing delay tasks, keyed by expiration time.
+        /// </summary>
         private readonly IDictionary<DateTime, IList<TaskCompletionSource<object>>> _pendingTasks =
             new SortedDictionary<DateTime, IList<TaskCompletionSource<object>>>();
 
+        /// <summary>
+        ///     When manually progressing the current time via calls to
+        ///     <c>MoveForwardBy</c> or <c>MoveForwardTo</c>, this is the duration that the calling thread
+        ///     yields in order to allow any continuation tasks to execute after each completed delay task.
+        /// </summary>
+        private readonly TimeSpan _yieldDuration;
+
+        /// <summary>
+        ///     The initial start time for the service.
+        /// </summary>
         private readonly DateTime _startTime;
+
+        /// <summary>
+        ///     The current time for the service.
+        /// </summary>
         private DateTime _currentTime;
+
+        /// <summary>
+        ///     A count of how often <see cref="Dispose" /> has been invoked. Used to ensure that clean-up only occurs once.
+        /// </summary>
         private long _disposalCount;
 
         /// <summary>
-        ///     Creates a new instance that uses the actual current time as the initial start time.
+        ///     Creates a new instance that uses the actual current time as the initial start time, and a default
+        ///     yield duration to allow continuation tasks to execute when delay tasks complete.
         /// </summary>
-        public TestTimeService() : this(DateTime.UtcNow)
+        public TestTimeService() : this(DateTime.UtcNow, DefaultYieldDuration)
         {}
 
         /// <summary>
-        ///     Creates a new instance that uses the specified <paramref name="startTime" />.
+        ///     Creates a new instance that uses the specified <paramref name="startTime" />, and a default
+        ///     yield duration to allow continuation tasks to execute when delay tasks complete.
         /// </summary>
         /// <param name="startTime">The initial value of &quot;current time&quot;.</param>
-        public TestTimeService(DateTime startTime)
+        public TestTimeService(DateTime startTime) : this(startTime, DefaultYieldDuration)
+        {}
+
+        /// <summary>
+        ///     Creates a new instance that uses the actual current time as the initial start time, and
+        ///     the specified yield duration to allow continuation tasks to execute when delay tasks complete.
+        /// </summary>
+        /// <param name="yieldDuration">
+        ///     When manually progressing the current time via calls to
+        ///     <c>MoveForwardBy</c> or <c>MoveForwardTo</c>, this is the duration that the calling thread
+        ///     yields in order to allow any continuation tasks to execute after each completed delay task.
+        /// </param>
+        public TestTimeService(TimeSpan yieldDuration) : this(DateTime.UtcNow, yieldDuration)
+        {}
+
+        /// <summary>
+        ///     Creates a new instance that uses the specified <paramref name="startTime" />, and a default
+        ///     yield duration to allow continuation tasks to execute when delay tasks complete.
+        /// </summary>
+        /// <param name="startTime">The initial value of &quot;current time&quot;.</param>
+        /// <param name="yieldDuration">
+        ///     When manually progressing the current time via calls to
+        ///     <c>MoveForwardBy</c> or <c>MoveForwardTo</c>, this is the duration that the calling thread
+        ///     yields in order to allow any continuation tasks to execute after each completed delay task.
+        /// </param>
+        public TestTimeService(DateTime startTime, TimeSpan yieldDuration)
         {
+            if (yieldDuration < TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException("yieldDuration", "Value cannot be negative or infinite");
+            }
+
             _startTime = _currentTime = startTime.ToUniversalTime();
+            _yieldDuration = yieldDuration;
         }
 
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        ///     Dispses of this instamce, attempting to cancel all outstanding delay tasks.
         /// </summary>
-        /// <filterpriority>2</filterpriority>
         public void Dispose()
         {
             if (Interlocked.Increment(ref _disposalCount) == 1)
@@ -57,7 +116,7 @@ namespace RedGate.Time.Test
         }
 
         /// <summary>
-        /// Checks that this instance hasn't been disposed.
+        ///     Checks that this instance hasn't been disposed.
         /// </summary>
         /// <exception cref="ObjectDisposedException">Raised if this instance has beeen disposed.</exception>
         private void CheckDisposed()
@@ -363,7 +422,7 @@ namespace RedGate.Time.Test
                 _pendingTasks.Remove(pair.Key);
 
                 // Briefly yield to any tasks that have just completed.
-                Monitor.Wait(_lock, 10);
+                Monitor.Wait(_lock, _yieldDuration);
             }
         }
     }

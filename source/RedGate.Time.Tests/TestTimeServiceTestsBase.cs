@@ -12,7 +12,7 @@ namespace RedGate.Time.Tests
         [SetUp]
         public virtual void SetUp()
         {
-            TimeService = new TestTimeService(ServiceStartTime);
+            TimeService = new TestTimeService(ServiceStartTime, TimeSpan.FromMilliseconds(50));
         }
 
         [TearDown]
