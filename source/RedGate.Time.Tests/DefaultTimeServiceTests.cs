@@ -14,7 +14,7 @@ namespace RedGate.Time.Tests
         /// <summary>
         /// The duration of the real delay tasks used in the tests, in milliseconds.
         /// </summary>
-        private static readonly int DelayTimeSpanInMilliseconds = 500;
+        private static readonly int DelayTimeSpanInMilliseconds = 800;
 
         /// <summary>
         /// The duration of the real delay tasks used in the tests, equivalent to <see cref="DelayTimeSpanInMilliseconds"/>.
@@ -24,7 +24,7 @@ namespace RedGate.Time.Tests
         /// <summary>
         /// The leeway given to the OS to reschedule the current thread once a delay task expires or is cancelled.
         /// </summary>
-        private static readonly TimeSpan Leeway = TimeSpan.FromMilliseconds(50);
+        private static readonly TimeSpan Leeway = TimeSpan.FromMilliseconds(80);
 
         /// <summary>
         /// The time span after which a cancellation occurs whilst waiting for a delay task.

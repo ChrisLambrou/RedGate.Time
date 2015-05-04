@@ -43,6 +43,7 @@
     </Compile>
     <Compile Include="DefaultTimeServiceTests.cs" />
     <Compile Include="TestTimeServiceTestsBase.cs" />
+    <Compile Include="TestTimeService_DelayArgumentChecks.cs" />
     <Compile Include="TestTimeService_DisposableChecks.cs" />
     <Compile Include="TestTimeService_SingleNonZeroLengthDelayTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

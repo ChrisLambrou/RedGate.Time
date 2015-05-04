@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace RedGate.Time.Tests
@@ -55,6 +58,16 @@ namespace RedGate.Time.Tests
             Assert.That(executionCount, Is.EqualTo(0));
             TimeService.MoveForwardTo(1000);
             Assert.That(executionCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void WhenDelayIsCalledWithACancelledCancellationToken_ItShouldReturnAnImmediatelyCancelledTask()
+        {
+            var token = new CancellationToken(true);
+            var task = TimeService.Delay(1000, token);
+
+            var aggregateException = Assert.Throws<AggregateException>(task.Wait);
+            Assert.That(aggregateException.InnerExceptions.First(), Is.InstanceOf<TaskCanceledException>());
         }
     }
 }
