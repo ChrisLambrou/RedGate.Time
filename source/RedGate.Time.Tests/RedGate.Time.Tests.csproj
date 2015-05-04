@@ -41,6 +41,7 @@
     <Compile Include="..\RedGate.Time\VersionInfo.cs">
       <Link>VersionInfo.cs</Link>
     </Compile>
+    <Compile Include="DefaultTimeServiceTests.cs" />
     <Compile Include="TestTimeServiceTestsBase.cs" />
     <Compile Include="TestTimeService_DisposableChecks.cs" />
     <Compile Include="TestTimeService_SingleNonZeroLengthDelayTests.cs" />
