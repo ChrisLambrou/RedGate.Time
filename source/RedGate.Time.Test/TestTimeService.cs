@@ -271,7 +271,11 @@ namespace RedGate.Time.Test
         private static TaskCompletionSource<object> CeateTaskCompletionSource(CancellationToken cancellationToken)
         {
             var taskCompletionSource = new TaskCompletionSource<object>();
-            if (cancellationToken.CanBeCanceled)
+            if (cancellationToken.IsCancellationRequested)
+            {
+                taskCompletionSource.SetCanceled();
+            }
+            else if (cancellationToken.CanBeCanceled)
             {
                 cancellationToken.Register(() => taskCompletionSource.TrySetCanceled());
             }
