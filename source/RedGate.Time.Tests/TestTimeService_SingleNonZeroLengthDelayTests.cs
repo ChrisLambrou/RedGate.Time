@@ -69,5 +69,18 @@ namespace RedGate.Time.Tests
             var aggregateException = Assert.Throws<AggregateException>(task.Wait);
             Assert.That(aggregateException.InnerExceptions.First(), Is.InstanceOf<TaskCanceledException>());
         }
+
+        [Test]
+        public void WhenDelayIsCalledWithACancellationToken_ThatIsSubsequentlyCancelled_TheTaskShouldRaiseAnException()
+        {
+            var source = new CancellationTokenSource();
+            var delayTask = TimeService.Delay(1000, source.Token);
+            TimeService.MoveForwardBy(500);
+
+            source.Cancel();
+
+            var aggregateException = Assert.Throws<AggregateException>(() => delayTask.Wait(10));
+            Assert.That(aggregateException.InnerExceptions.First(), Is.InstanceOf<TaskCanceledException>());
+        }
     }
 }
